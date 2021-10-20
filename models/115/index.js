@@ -84,49 +84,40 @@ function pageTwoIteration(
         row++;
         continue;
       case 12:
-        output += parseNumericValue(input.earnedIncomes.recipients, lon);
+        output += parseNumericValue(input.retentionsAndIncomes.recipients, lon);
         row++;
         continue;
       case 13:
-        output += parseNumericValue(input.earnedIncomes.collectionsAmount, lon);
+        output += parseNumericValue(
+          input.retentionsAndIncomes.retentionsBaseAmount,
+          lon
+        );
         row++;
         continue;
       case 14:
-        output += parseNumericValue(input.earnedIncomes.retentionsAmount, lon);
+        output += parseNumericValue(
+          input.retentionsAndIncomes.retentionsAmount,
+          lon
+        );
         row++;
         continue;
-      case 18:
-        output += parseNumericValue(input.economicEarnings.recipients, lon);
+      case 15:
+        output += parseNumericValue("0", lon);
+        row++;
+        continue;
+      case 16:
+        const diff =
+          parseFloat(input.retentionsAndIncomes.retentionsBaseAmount) -
+          parseFloat(input.retentionsAndIncomes.retentionsAmount);
+        output += parseNumericValue(diff.toString(), lon);
         row++;
         continue;
       case 19:
-        output += parseNumericValue(
-          input.economicEarnings.collectionsAmount,
-          lon
-        );
-        row++;
-        continue;
-      case 20:
-        output += parseNumericValue(
-          input.economicEarnings.retentionsAmount,
-          lon
-        );
-        row++;
-        continue;
-      case 39:
-      case 41:
-        const sum =
-          parseFloat(input.earnedIncomes.retentionsAmount) +
-          parseFloat(input.economicEarnings.retentionsAmount);
-        output += parseNumericValue(sum.toString(), lon);
-        row++;
-        continue;
-      case 45:
         output += "ES5521003034132200453561".padEnd(lon, " ");
         row++;
         continue;
-      case 48:
-        output += "</T11101000>".padEnd(lon, " ");
+      case 22:
+        output += "</T11501000>".padEnd(lon, " ");
         row++;
         continue;
     }
@@ -136,7 +127,7 @@ function pageTwoIteration(
     } else if (type === "Num" || type === "N") {
       output += "0".padStart(lon, "0");
     }
-    if (row > 46 && content === "") {
+    if (row > 21 && content === "") {
       output += "".padEnd(lon, " ");
     }
     row++;
@@ -144,22 +135,17 @@ function pageTwoIteration(
   return output;
 }
 
-async function model111(filename) {
+async function model115(filename) {
   // BEGIN USER INPUT
   const input = {
     exercise: "2021",
     period: "3T",
     version: "0001",
     companyNIF: "85355680N",
-    earnedIncomes: {
+    retentionsAndIncomes: {
       recipients: "0",
-      collectionsAmount: "0",
+      retentionsBaseAmount: "0",
       retentionsAmount: "0",
-    },
-    economicEarnings: {
-      recipients: "2",
-      collectionsAmount: "150.50",
-      retentionsAmount: "22.58",
     },
   };
   // END USER INPUT
@@ -177,10 +163,10 @@ async function model111(filename) {
       // END PAGE 1
       // BEGIN PAGE 2
       const page2 = wb.getWorksheet(2);
-      let page2Constant = "<T11101000>";
+      let page2Constant = "<T11501000>";
       output += page2Constant;
       row = 10;
-      output += pageTwoIteration(page2, 0, 44, row, blankKeywords, input);
+      output += pageTwoIteration(page2, 0, 18, row, blankKeywords, input);
       // END PAGE 2
       let finalConstant = extractText(page1.getCell(`G${page1FinalRow}`).text);
       finalConstant = finalConstant
@@ -192,7 +178,7 @@ async function model111(filename) {
         mkdirSync(outputDir);
       }
       await writeFile(
-        process.cwd() + "/output/111.txt",
+        process.cwd() + "/output/115.txt",
         output,
         function (err) {
           if (err) throw err;
@@ -205,4 +191,4 @@ async function model111(filename) {
     });
 }
 
-exports.default = model111;
+exports.default = model115;
