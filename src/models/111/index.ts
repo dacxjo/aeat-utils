@@ -1,17 +1,17 @@
-const ExcelJS = require("exceljs");
-const { existsSync, mkdirSync } = require("fs");
-const { writeFile } = require("fs/promises");
-const { extractText, parseNumericValue } = require("../../utils");
+import { Workbook, Worksheet } from 'exceljs';
+import { existsSync, mkdirSync } from 'fs';
+import { writeFile } from 'fs/promises';
+import { extractText, parseNumericValue } from '../../utils';
 
 function pageOneIteration(
-  worksheet,
-  fromRow,
-  toRow,
-  row,
-  blankKeywords,
-  input
+  worksheet: Worksheet,
+  fromRow: number,
+  toRow: number,
+  row: number,
+  blankKeywords: string[],
+  input: Model111Input,
 ) {
-  let output = "";
+  let output = '';
   for (let index = fromRow; index < toRow; index++) {
     const id = Number(worksheet.getCell(`A${row}`).text);
     const lon = Number(worksheet.getCell(`C${row}`).text);
@@ -30,12 +30,12 @@ function pageOneIteration(
         row++;
         continue;
       case 11:
-        output += input.companyNIF;
+        output += input.devCompanyNIF;
         row++;
         continue;
     }
     if (blankKeywords.includes(content)) {
-      output += "".padEnd(lon, " ");
+      output += ''.padEnd(lon, ' ');
     } else {
       output += content;
     }
@@ -45,14 +45,14 @@ function pageOneIteration(
 }
 
 function pageTwoIteration(
-  worksheet,
-  fromRow,
-  toRow,
-  row,
-  blankKeywords,
-  input
+  worksheet: Worksheet,
+  fromRow: number,
+  toRow: number,
+  row: number,
+  blankKeywords: string[],
+  input: Model111Input,
 ) {
-  let output = "";
+  let output = '';
   for (let index = fromRow; index < toRow; index++) {
     const id = Number(worksheet.getCell(`A${row}`).text);
     const lon = Number(worksheet.getCell(`C${row}`).text);
@@ -60,19 +60,19 @@ function pageTwoIteration(
     const content = extractText(worksheet.getCell(`F${row}`).text);
     switch (id) {
       case 6:
-        output += "I";
+        output += 'I';
         row++;
         continue;
       case 7:
-        output += "16250182S";
+        output += '16250182S';
         row++;
         continue;
       case 8:
-        output += "Martinez Davis".padEnd(lon, " ");
+        output += 'Martinez Davis'.padEnd(lon, ' ');
         row++;
         continue;
       case 9:
-        output += "Emily".padEnd(lon, " ");
+        output += 'Emily'.padEnd(lon, ' ');
         row++;
         continue;
       case 10:
@@ -100,109 +100,98 @@ function pageTwoIteration(
         row++;
         continue;
       case 19:
-        output += parseNumericValue(
-          input.economicEarnings.collectionsAmount,
-          lon
-        );
+        output += parseNumericValue(input.economicEarnings.collectionsAmount, lon);
         row++;
         continue;
       case 20:
-        output += parseNumericValue(
-          input.economicEarnings.retentionsAmount,
-          lon
-        );
+        output += parseNumericValue(input.economicEarnings.retentionsAmount, lon);
         row++;
         continue;
       case 39:
-      case 41:
+      case 41: {
         const sum =
-          parseFloat(input.earnedIncomes.retentionsAmount) +
-          parseFloat(input.economicEarnings.retentionsAmount);
+          parseFloat(input.earnedIncomes.retentionsAmount) + parseFloat(input.economicEarnings.retentionsAmount);
         output += parseNumericValue(sum.toString(), lon);
         row++;
         continue;
+      }
       case 45:
-        output += "ES5521003034132200453561".padEnd(lon, " ");
+        output += 'ES5521003034132200453561'.padEnd(lon, ' ');
         row++;
         continue;
       case 48:
-        output += "</T11101000>".padEnd(lon, " ");
+        output += '</T11101000>'.padEnd(lon, ' ');
         row++;
         continue;
     }
 
     if (blankKeywords.includes(content)) {
-      output += "".padEnd(lon, " ");
-    } else if (type === "Num" || type === "N") {
-      output += "0".padStart(lon, "0");
+      output += ''.padEnd(lon, ' ');
+    } else if (type === 'Num' || type === 'N') {
+      output += '0'.padStart(lon, '0');
     }
-    if (row > 46 && content === "") {
-      output += "".padEnd(lon, " ");
+    if (row > 46 && content === '') {
+      output += ''.padEnd(lon, ' ');
     }
     row++;
   }
   return output;
 }
 
-async function model111(filename) {
+export async function model111(filename: string) {
   // BEGIN USER INPUT
-  const input = {
-    exercise: "2021",
-    period: "3T",
-    version: "0001",
-    companyNIF: "85355680N",
+  const input: Model111Input = {
+    exercise: '2021',
+    period: '3T',
+    version: '0001',
+    devCompanyNIF: '85355680N',
     earnedIncomes: {
-      recipients: "0",
-      collectionsAmount: "0",
-      retentionsAmount: "0",
+      recipients: '0',
+      collectionsAmount: '0',
+      retentionsAmount: '0',
     },
     economicEarnings: {
-      recipients: "2",
-      collectionsAmount: "150.50",
-      retentionsAmount: "22.58",
+      recipients: '2',
+      collectionsAmount: '150.50',
+      retentionsAmount: '22.58',
     },
   };
   // END USER INPUT
-  let workbook = new ExcelJS.Workbook();
-  const blankKeywords = ["BLANCOS", "blanco", "En blanco", "X"];
-  let output = "";
+  const workbook = new Workbook();
+  const blankKeywords = ['BLANCOS', 'blanco', 'En blanco', 'X'];
+  let output = '';
   await workbook.xlsx
     .readFile(filename)
-    .then(async (wb) => {
+    .then(async (wb: Workbook) => {
       // BEGIN PAGE 1
       const page1 = wb.getWorksheet(1);
       let row = 6;
-      let page1FinalRow = 20;
+      const page1FinalRow = 20;
       output += pageOneIteration(page1, 0, 14, row, blankKeywords, input);
       // END PAGE 1
       // BEGIN PAGE 2
       const page2 = wb.getWorksheet(2);
-      let page2Constant = "<T11101000>";
+      const page2Constant = '<T11101000>';
       output += page2Constant;
       row = 10;
       output += pageTwoIteration(page2, 0, 44, row, blankKeywords, input);
       // END PAGE 2
       let finalConstant = extractText(page1.getCell(`G${page1FinalRow}`).text);
-      finalConstant = finalConstant
-        .replace("AAAA", input.exercise)
-        .replace("PP", input.period);
+      finalConstant = finalConstant.replace('AAAA', input.exercise).replace('PP', input.period);
       output += finalConstant;
-      const outputDir = process.cwd() + "/output/";
+      const outputDir = process.cwd() + '/output/';
       if (!existsSync(outputDir)) {
         mkdirSync(outputDir);
       }
-      await writeFile(
-        process.cwd() + "/output/111.txt",
-        output,
-        function (err) {
-          if (err) throw err;
-          console.log("Saved!");
-        }
-      );
+      await writeFile(process.cwd() + '/output/111.txt', output)
+        .then(() => {
+          console.log('Model 111 Generated');
+        })
+        .catch((err: Error) => {
+          throw new Error(err.stack);
+        });
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((err: Error) => {
+      throw new Error(err.stack);
     });
 }
-
-exports.default = model111;
