@@ -1,10 +1,10 @@
 import { Workbook, Worksheet } from 'exceljs';
 import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
-import { blankKeywords, extractText, parseNumericValue } from '../../utils';
+import { blankKeywords, extractText, parseNumericValue, sumFields } from '../../utils';
 import { join } from 'path';
 
-function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, input: Model111Input) {
+function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model111Input) {
   let output = '';
   for (let index = fromRow; index < toRow; index++) {
     const id = Number(worksheet.getCell(`A${row}`).text);
@@ -12,19 +12,19 @@ function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
     const content = extractText(worksheet.getCell(`G${row}`).text);
     switch (id) {
       case 4:
-        output += input.exercise;
+        output += data.exercise;
         row++;
         continue;
       case 5:
-        output += input.period;
+        output += data.period;
         row++;
         continue;
       case 9:
-        output += input.version;
+        output += data.version;
         row++;
         continue;
       case 11:
-        output += input.devCompanyNIF;
+        output += data.devCompanyNIF;
         row++;
         continue;
     }
@@ -38,7 +38,7 @@ function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
   return output;
 }
 
-function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, input: Model111Input) {
+function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model111Input) {
   let output = '';
   for (let index = fromRow; index < toRow; index++) {
     const id = Number(worksheet.getCell(`A${row}`).text);
@@ -47,63 +47,62 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
     const content = extractText(worksheet.getCell(`F${row}`).text);
     switch (id) {
       case 6:
-        output += 'I';
+        output += data.declarationType;
         row++;
         continue;
       case 7:
-        output += '16250182S';
+        output += data.declarant.nif;
         row++;
         continue;
       case 8:
-        output += 'Martinez Davis'.padEnd(lon, ' ');
+        output += data.declarant.lastname.padEnd(lon, ' ');
         row++;
         continue;
       case 9:
-        output += 'Emily'.padEnd(lon, ' ');
+        output += data.declarant.name.padEnd(lon, ' ');
         row++;
         continue;
       case 10:
-        output += input.exercise;
+        output += data.exercise;
         row++;
         continue;
       case 11:
-        output += input.period;
+        output += data.period;
         row++;
         continue;
       case 12:
-        output += parseNumericValue(input.earnedIncomes.recipients, lon);
+        output += parseNumericValue(data.fields.field01, lon);
         row++;
         continue;
       case 13:
-        output += parseNumericValue(input.earnedIncomes.collectionsAmount, lon);
+        output += parseNumericValue(data.fields.field02, lon);
         row++;
         continue;
       case 14:
-        output += parseNumericValue(input.earnedIncomes.retentionsAmount, lon);
+        output += parseNumericValue(data.fields.field03, lon);
         row++;
         continue;
       case 18:
-        output += parseNumericValue(input.economicEarnings.recipients, lon);
+        output += parseNumericValue(data.fields.field07, lon);
         row++;
         continue;
       case 19:
-        output += parseNumericValue(input.economicEarnings.collectionsAmount, lon);
+        output += parseNumericValue(data.fields.field08, lon);
         row++;
         continue;
       case 20:
-        output += parseNumericValue(input.economicEarnings.retentionsAmount, lon);
+        output += parseNumericValue(data.fields.field09, lon);
         row++;
         continue;
       case 39:
       case 41: {
-        const sum =
-          parseFloat(input.earnedIncomes.retentionsAmount) + parseFloat(input.economicEarnings.retentionsAmount);
-        output += parseNumericValue(sum.toString(), lon);
+        const field28 = sumFields(data.fields.field03, data.fields.field09);
+        output += parseNumericValue(field28.toString(), lon);
         row++;
         continue;
       }
       case 45:
-        output += 'ES5521003034132200453561'.padEnd(lon, ' ');
+        output += data.declarant.iban.padEnd(lon, ' ');
         row++;
         continue;
       case 48:
@@ -111,7 +110,6 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         row++;
         continue;
     }
-
     if (blankKeywords.includes(content)) {
       output += ''.padEnd(lon, ' ');
     } else if (type === 'Num' || type === 'N') {
