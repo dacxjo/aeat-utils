@@ -9,3 +9,5 @@ export function extractText(text: string) {
 export function parseNumericValue(text: string, lon: number) {
   return text.split('.').join('').padStart(lon, '0');
 }
+
+export const blankKeywords = ['BLANCOS', 'blanco', 'En blanco', 'X'];

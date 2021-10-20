@@ -21,3 +21,8 @@ interface Model115Input extends ModelInput {
     [key: string]: string;
   };
 }
+
+type ModelOptions = {
+  destinationPath?: string;
+  asBuffer?: boolean;
+};

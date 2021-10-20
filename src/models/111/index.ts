@@ -1,16 +1,10 @@
 import { Workbook, Worksheet } from 'exceljs';
 import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
-import { extractText, parseNumericValue } from '../../utils';
+import { blankKeywords, extractText, parseNumericValue } from '../../utils';
+import { join } from 'path';
 
-function pageOneIteration(
-  worksheet: Worksheet,
-  fromRow: number,
-  toRow: number,
-  row: number,
-  blankKeywords: string[],
-  input: Model111Input,
-) {
+function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, input: Model111Input) {
   let output = '';
   for (let index = fromRow; index < toRow; index++) {
     const id = Number(worksheet.getCell(`A${row}`).text);
@@ -44,14 +38,7 @@ function pageOneIteration(
   return output;
 }
 
-function pageTwoIteration(
-  worksheet: Worksheet,
-  fromRow: number,
-  toRow: number,
-  row: number,
-  blankKeywords: string[],
-  input: Model111Input,
-) {
+function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, input: Model111Input) {
   let output = '';
   for (let index = fromRow; index < toRow; index++) {
     const id = Number(worksheet.getCell(`A${row}`).text);
@@ -138,58 +125,40 @@ function pageTwoIteration(
   return output;
 }
 
-export async function model111(filename: string) {
-  // BEGIN USER INPUT
-  const input: Model111Input = {
-    exercise: '2021',
-    period: '3T',
-    version: '0001',
-    devCompanyNIF: '85355680N',
-    earnedIncomes: {
-      recipients: '0',
-      collectionsAmount: '0',
-      retentionsAmount: '0',
-    },
-    economicEarnings: {
-      recipients: '2',
-      collectionsAmount: '150.50',
-      retentionsAmount: '22.58',
-    },
-  };
-  // END USER INPUT
+export async function model111(input: Model111Input, options: ModelOptions) {
+  const specsDir = join(__dirname, '../../specs');
+  const file111 = `${specsDir}/dr111e16v18.xlsx`;
   const workbook = new Workbook();
-  const blankKeywords = ['BLANCOS', 'blanco', 'En blanco', 'X'];
   let output = '';
   await workbook.xlsx
-    .readFile(filename)
+    .readFile(file111)
     .then(async (wb: Workbook) => {
       // BEGIN PAGE 1
       const page1 = wb.getWorksheet(1);
       let row = 6;
       const page1FinalRow = 20;
-      output += pageOneIteration(page1, 0, 14, row, blankKeywords, input);
+      output += pageOneIteration(page1, 0, 14, row, input);
       // END PAGE 1
       // BEGIN PAGE 2
       const page2 = wb.getWorksheet(2);
       const page2Constant = '<T11101000>';
       output += page2Constant;
       row = 10;
-      output += pageTwoIteration(page2, 0, 44, row, blankKeywords, input);
+      output += pageTwoIteration(page2, 0, 44, row, input);
       // END PAGE 2
       let finalConstant = extractText(page1.getCell(`G${page1FinalRow}`).text);
       finalConstant = finalConstant.replace('AAAA', input.exercise).replace('PP', input.period);
       output += finalConstant;
-      const outputDir = process.cwd() + '/output/';
-      if (!existsSync(outputDir)) {
-        mkdirSync(outputDir);
+      if (options.asBuffer) {
+        return Buffer.from(output);
+      } else {
+        const outputDir = `${process.cwd()}/${options.destinationPath}`;
+        console.log(outputDir);
+        if (!existsSync(outputDir)) {
+          mkdirSync(outputDir, { recursive: true });
+        }
+        return writeFile(`${outputDir}/111.txt`, output);
       }
-      await writeFile(process.cwd() + '/output/111.txt', output)
-        .then(() => {
-          console.log('Model 111 Generated');
-        })
-        .catch((err: Error) => {
-          throw new Error(err.stack);
-        });
     })
     .catch((err: Error) => {
       throw new Error(err.stack);
