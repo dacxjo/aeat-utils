@@ -151,7 +151,6 @@ export async function model111(input: Model111Input, options: ModelOptions) {
         return Buffer.from(output);
       } else {
         const outputDir = `${process.cwd()}/${options.destinationPath}`;
-        console.log(outputDir);
         if (!existsSync(outputDir)) {
           mkdirSync(outputDir, { recursive: true });
         }

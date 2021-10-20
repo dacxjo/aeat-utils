@@ -29,9 +29,11 @@ interface Model111Input extends ModelInput {
   };
 }
 
-interface Model115Input extends ModelInput {
-  retentionsAndIncomes: {
-    [key: string]: string;
+interface Model115Input extends Omit<Model111Input, 'fields'> {
+  fields: {
+    field01: Field;
+    field02: Field;
+    field03: Field;
   };
 }
 

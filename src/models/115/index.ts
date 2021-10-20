@@ -1,16 +1,10 @@
 import { Workbook, Worksheet } from 'exceljs';
 import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
-import { extractText, parseNumericValue } from '../../utils';
+import { blankKeywords, extractText, parseNumericValue } from '../../utils';
+import { join } from 'path';
 
-function pageOneIteration(
-  worksheet: Worksheet,
-  fromRow: number,
-  toRow: number,
-  row: number,
-  blankKeywords: string[],
-  input: Model115Input,
-) {
+function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model115Input) {
   let output = '';
   for (let index = fromRow; index < toRow; index++) {
     const id = Number(worksheet.getCell(`A${row}`).text);
@@ -18,19 +12,19 @@ function pageOneIteration(
     const content = extractText(worksheet.getCell(`G${row}`).text);
     switch (id) {
       case 4:
-        output += input.exercise;
+        output += data.exercise;
         row++;
         continue;
       case 5:
-        output += input.period;
+        output += data.period;
         row++;
         continue;
       case 9:
-        output += input.version;
+        output += data.version;
         row++;
         continue;
       case 11:
-        output += input.devCompanyNIF;
+        output += data.devCompanyNIF;
         row++;
         continue;
     }
@@ -44,71 +38,58 @@ function pageOneIteration(
   return output;
 }
 
-function pageTwoIteration(
-  worksheet: Worksheet,
-  fromRow: number,
-  toRow: number,
-  row: number,
-  blankKeywords: string[],
-  input: Model115Input,
-) {
+function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model115Input) {
   let output = '';
   for (let index = fromRow; index < toRow; index++) {
     const id = Number(worksheet.getCell(`A${row}`).text);
     const lon = Number(worksheet.getCell(`C${row}`).text);
     const type = worksheet.getCell(`D${row}`).text;
-    const content = extractText(worksheet.getCell(`F${row}`).text);
+    const content = extractText(worksheet.getCell(`G${row}`).text);
     switch (id) {
       case 6:
-        output += 'I';
+        output += data.declarationType;
         row++;
         continue;
       case 7:
-        output += '16250182S';
+        output += data.declarant.nif;
         row++;
         continue;
       case 8:
-        output += 'Martinez Davis'.padEnd(lon, ' ');
+        output += data.declarant.lastname.padEnd(lon, ' ');
         row++;
         continue;
       case 9:
-        output += 'Emily'.padEnd(lon, ' ');
+        output += data.declarant.name.padEnd(lon, ' ');
         row++;
         continue;
       case 10:
-        output += input.exercise;
+        output += data.exercise;
         row++;
         continue;
       case 11:
-        output += input.period;
+        output += data.period;
         row++;
         continue;
       case 12:
-        output += parseNumericValue(input.retentionsAndIncomes.recipients, lon);
+        output += parseNumericValue(data.fields.field01, lon);
+        console.log('%s %s', parseNumericValue(data.fields.field01, lon), lon);
         row++;
         continue;
       case 13:
-        output += parseNumericValue(input.retentionsAndIncomes.retentionsBaseAmount, lon);
+        output += parseNumericValue(data.fields.field02, lon);
         row++;
         continue;
       case 14:
-        output += parseNumericValue(input.retentionsAndIncomes.retentionsAmount, lon);
+      case 16:
+        output += parseNumericValue(data.fields.field03, lon);
         row++;
         continue;
       case 15:
         output += parseNumericValue('0', lon);
         row++;
         continue;
-      case 16: {
-        const diff =
-          parseFloat(input.retentionsAndIncomes.retentionsBaseAmount) -
-          parseFloat(input.retentionsAndIncomes.retentionsAmount);
-        output += parseNumericValue(diff.toString(), lon);
-        row++;
-        continue;
-      }
       case 19:
-        output += 'ES5521003034132200453561'.padEnd(lon, ' ');
+        output += data.declarant.iban.padEnd(lon, ' ');
         row++;
         continue;
       case 22:
@@ -130,53 +111,39 @@ function pageTwoIteration(
   return output;
 }
 
-export async function model115(filename: string) {
-  // BEGIN USER INPUT
-  const input: Model115Input = {
-    exercise: '2021',
-    period: '3T',
-    version: '0001',
-    devCompanyNIF: '85355680N',
-    retentionsAndIncomes: {
-      recipients: '0',
-      retentionsBaseAmount: '0',
-      retentionsAmount: '0',
-    },
-  };
-  // END USER INPUT
+export async function model115(input: Model115Input, options: ModelOptions) {
+  const specsDir = join(__dirname, '../../specs');
+  const file115 = `${specsDir}/DR115e15v13.xlsx`;
   const workbook = new Workbook();
-  const blankKeywords = ['BLANCOS', 'blanco', 'En blanco', 'X'];
   let output = '';
   await workbook.xlsx
-    .readFile(filename)
+    .readFile(file115)
     .then(async (wb: Workbook) => {
       // BEGIN PAGE 1
       const page1 = wb.getWorksheet(1);
       let row = 6;
       const page1FinalRow = 20;
-      output += pageOneIteration(page1, 0, 14, row, blankKeywords, input);
+      output += pageOneIteration(page1, 0, 14, row, input);
       // END PAGE 1
       // BEGIN PAGE 2
       const page2 = wb.getWorksheet(2);
       const page2Constant = '<T11501000>';
       output += page2Constant;
       row = 10;
-      output += pageTwoIteration(page2, 0, 18, row, blankKeywords, input);
+      output += pageTwoIteration(page2, 0, 18, row, input);
       // END PAGE 2
       let finalConstant = extractText(page1.getCell(`G${page1FinalRow}`).text);
       finalConstant = finalConstant.replace('AAAA', input.exercise).replace('PP', input.period);
       output += finalConstant;
-      const outputDir = process.cwd() + '/output/';
-      if (!existsSync(outputDir)) {
-        mkdirSync(outputDir);
+      if (options.asBuffer) {
+        return Buffer.from(output);
+      } else {
+        const outputDir = `${process.cwd()}/${options.destinationPath}`;
+        if (!existsSync(outputDir)) {
+          mkdirSync(outputDir, { recursive: true });
+        }
+        return writeFile(`${outputDir}/115.txt`, output);
       }
-      await writeFile(process.cwd() + '/output/115.txt', output)
-        .then(() => {
-          console.log('Model 115 Generated');
-        })
-        .catch((err: Error) => {
-          throw new Error(err.stack);
-        });
     })
     .catch((error: Error) => {
       throw new Error(error.stack);
