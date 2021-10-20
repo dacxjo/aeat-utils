@@ -1,10 +1,10 @@
 import { Workbook, Worksheet } from 'exceljs';
 import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
-import { blankKeywords, extractText, parseNumericValue } from '../../utils';
+import { blankKeywords, extractText, parseNumericValue, subtractFields } from '../../utils';
 import { join } from 'path';
 
-function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model115Input) {
+function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model130Input) {
   let output = '';
   for (let index = fromRow; index < toRow; index++) {
     const id = Number(worksheet.getCell(`A${row}`).text);
@@ -38,13 +38,18 @@ function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
   return output;
 }
 
-function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model115Input) {
+function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model130Input) {
   let output = '';
+  const field03 = subtractFields(data.fields.field01, data.fields.field02);
+  let field04 = field03 * 0.2;
+  if (field04 < 0) field04 = 0;
+  const field07 = field04 - subtractFields(data.fields.field05, data.fields.field06);
+  const field14 = field07 - Number(data.fields.field13);
   for (let index = fromRow; index < toRow; index++) {
     const id = Number(worksheet.getCell(`A${row}`).text);
     const lon = Number(worksheet.getCell(`C${row}`).text);
     const type = worksheet.getCell(`D${row}`).text;
-    const content = extractText(worksheet.getCell(`G${row}`).text);
+    const content = extractText(worksheet.getCell(`F${row}`).text);
     switch (id) {
       case 6:
         output += data.declarationType;
@@ -79,30 +84,51 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         row++;
         continue;
       case 14:
-      case 16:
-        output += parseNumericValue(data.fields.field03, lon);
+        output += parseNumericValue(field03, lon);
         row++;
         continue;
       case 15:
-        output += parseNumericValue('0', lon);
+        output += parseNumericValue(field04, lon);
         row++;
         continue;
-      case 19:
+      case 16:
+        output += parseNumericValue(data.fields.field05, lon);
+        row++;
+        continue;
+      case 17:
+        output += parseNumericValue(data.fields.field06, lon);
+        row++;
+        continue;
+      case 18:
+      case 23:
+        output += parseNumericValue(field07, lon);
+        row++;
+        continue;
+      case 24:
+        output += parseNumericValue(data.fields.field13, lon);
+        row++;
+        continue;
+      case 25:
+      case 28:
+      case 30:
+        output += parseNumericValue(field14, lon);
+        row++;
+        continue;
+      case 33:
         output += data.declarant.iban.padEnd(lon, ' ');
         row++;
         continue;
-      case 22:
-        output += '</T11501000>'.padEnd(lon, ' ');
+      case 36:
+        output += '</T13001000>'.padEnd(lon, ' ');
         row++;
         continue;
     }
-
     if (blankKeywords.includes(content)) {
       output += ''.padEnd(lon, ' ');
     } else if (type === 'Num' || type === 'N') {
       output += '0'.padStart(lon, '0');
     }
-    if (row > 21 && content === '') {
+    if (row > 35 && content === '') {
       output += ''.padEnd(lon, ' ');
     }
     row++;
@@ -110,26 +136,26 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
   return output;
 }
 
-export async function model115(input: Model115Input, options: ModelOptions) {
+export async function model130(input: Model130Input, options: ModelOptions) {
   const specsDir = join(__dirname, '../../specs');
-  const file115 = `${specsDir}/DR115e15v13.xlsx`;
+  const file130 = `${specsDir}/DR130e15v12.xlsx`;
   const workbook = new Workbook();
   let output = '';
   await workbook.xlsx
-    .readFile(file115)
+    .readFile(file130)
     .then(async (wb: Workbook) => {
       // BEGIN PAGE 1
       const page1 = wb.getWorksheet(1);
-      let row = 6;
-      const page1FinalRow = 20;
-      output += pageOneIteration(page1, 0, 14, row, input);
+      let row = 7;
+      const page1FinalRow = 21;
+      output += pageOneIteration(page1, 0, 13, row, input);
       // END PAGE 1
       // BEGIN PAGE 2
       const page2 = wb.getWorksheet(2);
-      const page2Constant = '<T11501000>';
+      const page2Constant = '<T13001000>';
       output += page2Constant;
       row = 10;
-      output += pageTwoIteration(page2, 0, 18, row, input);
+      output += pageTwoIteration(page2, 0, 32, row, input);
       // END PAGE 2
       let finalConstant = extractText(page1.getCell(`G${page1FinalRow}`).text);
       finalConstant = finalConstant.replace('AAAA', input.exercise).replace('PP', input.period);
@@ -141,7 +167,7 @@ export async function model115(input: Model115Input, options: ModelOptions) {
         if (!existsSync(outputDir)) {
           mkdirSync(outputDir, { recursive: true });
         }
-        return writeFile(`${outputDir}/115.txt`, output);
+        return writeFile(`${outputDir}/130.txt`, output);
       }
     })
     .catch((error: Error) => {

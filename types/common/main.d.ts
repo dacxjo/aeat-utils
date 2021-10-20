@@ -37,6 +37,16 @@ interface Model115Input extends Omit<Model111Input, 'fields'> {
   };
 }
 
+interface Model130Input extends Omit<Model111Input, 'fields'> {
+  fields: {
+    field01: Field;
+    field02: Field;
+    field05: Field;
+    field06: Field;
+    field13: Field;
+  };
+}
+
 type ModelOptions = {
   destinationPath?: string;
   asBuffer?: boolean;
