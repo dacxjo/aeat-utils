@@ -14,7 +14,7 @@
     "AEAT",
     "models"
   ],
-  "author": "dacxjo",
+  "author": "David Blandon <dacxjo@pm.me>",
   "license": "ISC",
   "dependencies": {
     "exceljs": "^4.3.0"

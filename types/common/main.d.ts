@@ -1,7 +1,23 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="enums.d.ts" />
 
-type Period = '1T' | '2T' | '3T' | '4T';
+type Period =
+  | '1T'
+  | '2T'
+  | '3T'
+  | '4T'
+  | '01'
+  | '02'
+  | '03'
+  | '04'
+  | '05'
+  | '06'
+  | '07'
+  | '08'
+  | '09'
+  | '10'
+  | '11'
+  | '12';
 type DeclarationType = 'I' | 'U' | 'G' | 'N';
 type VatDeclarationType = DeclarationType | 'C' | 'D' | 'V' | 'X';
 type Field = string | number;
