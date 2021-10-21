@@ -15,14 +15,22 @@ export function parseNumericValue(value: string | number, lon: number) {
   let parsed: string;
   if (typeof value === 'number') {
     if (value < 10 && value >= 0) {
-      toParse = value.toString();
+      if (lon === 5) {
+        toParse = value.toFixed(2);
+      } else {
+        toParse = value.toString();
+      }
     } else {
       toParse = value.toFixed(2);
     }
   } else {
     const stringNum = parseFloat(value);
     if (stringNum < 10 && stringNum >= 0) {
-      toParse = stringNum.toString();
+      if (lon === 5) {
+        toParse = stringNum.toFixed(2);
+      } else {
+        toParse = stringNum.toString();
+      }
     } else {
       toParse = stringNum.toFixed(2);
     }
@@ -66,4 +74,4 @@ export function subtractFields(fieldA: Field, fieldB: Field): number {
   }
 }
 
-export const blankKeywords = ['BLANCOS', 'blanco', 'En blanco', 'X', 'Blanco o C'];
+export const blankKeywords = ['BLANCOS', 'blanco', 'En blanco', 'X', 'Blanco o C', 'X o blanco'];

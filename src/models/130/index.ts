@@ -138,7 +138,7 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
 
 export async function model130(input: Model130Input, options: ModelOptions) {
   const specsDir = join(__dirname, '../../specs');
-  const file130 = `${specsDir}/DR130e15v12.xlsx`;
+  const file130 = `${specsDir}/${SpecsName.MODEL130}.xlsx`;
   const workbook = new Workbook();
   let output = '';
   await workbook.xlsx
