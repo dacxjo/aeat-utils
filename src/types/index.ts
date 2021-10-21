@@ -1,7 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference path="enums.d.ts" />
-
-type Period =
+export type Period =
   | '1T'
   | '2T'
   | '3T'
@@ -18,25 +15,25 @@ type Period =
   | '10'
   | '11'
   | '12';
-type DeclarationType = 'I' | 'U' | 'G' | 'N';
-type VatDeclarationType = DeclarationType | 'C' | 'D' | 'V' | 'X';
-type Field = string | number;
+export type DeclarationType = 'I' | 'U' | 'G' | 'N';
+export type VatDeclarationType = DeclarationType | 'C' | 'D' | 'V' | 'X';
+export type Field = string | number;
 
-interface Declarant {
+export interface Declarant {
   name: string;
   lastname: string;
   nif: string;
   iban: string;
 }
 
-interface ModelInput {
+export interface ModelInput {
   exercise: string;
   period: Period;
   version: string;
   devCompanyNIF: string;
 }
 
-interface Model111Input extends ModelInput {
+export interface Model111Input extends ModelInput {
   declarationType: DeclarationType;
   declarant: Declarant;
   fields: {
@@ -49,7 +46,7 @@ interface Model111Input extends ModelInput {
   };
 }
 
-interface Model115Input extends Omit<Model111Input, 'fields'> {
+export interface Model115Input extends Omit<Model111Input, 'fields'> {
   fields: {
     field01: Field;
     field02: Field;
@@ -57,7 +54,7 @@ interface Model115Input extends Omit<Model111Input, 'fields'> {
   };
 }
 
-interface Model130Input extends Omit<Model111Input, 'fields'> {
+export interface Model130Input extends Omit<Model111Input, 'fields'> {
   fields: {
     field01: Field;
     field02: Field;
@@ -67,7 +64,7 @@ interface Model130Input extends Omit<Model111Input, 'fields'> {
   };
 }
 
-interface Model303Input extends Omit<Model111Input, 'fields' | 'declarationType'> {
+export interface Model303Input extends Omit<Model111Input, 'fields' | 'declarationType'> {
   declarationType: VatDeclarationType;
   fields: {
     field01: Field;
@@ -100,11 +97,23 @@ interface Model303Input extends Omit<Model111Input, 'fields' | 'declarationType'
   };
 }
 
-interface PersistentField {
+export interface PersistentField {
   [key: string]: Field;
 }
 
-type ModelOptions = {
+export type ModelOptions = {
   destinationPath?: string;
   asBuffer?: boolean;
 };
+
+export enum SpecsName {
+  MODEL111 = 'dr111e16v18',
+  MODEL115 = 'DR115e15v13',
+  MODEL130 = 'DR130e15v12',
+  MODEL303 = 'DR303e21v200',
+}
+
+export declare function model111(input: Model111Input, options: ModelOptions): Promise<void>;
+export declare function model115(input: Model115Input, options: ModelOptions): Promise<void>;
+export declare function model130(input: Model130Input, options: ModelOptions): Promise<void>;
+export declare function model303(input: Model303Input, options: ModelOptions): Promise<void>;

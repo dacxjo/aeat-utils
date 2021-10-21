@@ -3,6 +3,7 @@ import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
 import { blankKeywords, extractText, parseNumericValue } from '../../utils';
 import { join } from 'path';
+import { PersistentField, Model303Input, ModelOptions, SpecsName } from '../../types';
 
 const persistentFields: PersistentField = {};
 

@@ -3,6 +3,7 @@ import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
 import { blankKeywords, extractText, parseNumericValue, subtractFields } from '../../utils';
 import { join } from 'path';
+import { Model130Input, ModelOptions, SpecsName } from '../../types';
 
 function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model130Input) {
   let output = '';

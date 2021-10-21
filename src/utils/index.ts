@@ -1,3 +1,5 @@
+import { Field } from '../types';
+
 function replaceAt(string: string, index: number, replace: string) {
   return string.substring(0, index) + replace + string.substring(index + 1);
 }
