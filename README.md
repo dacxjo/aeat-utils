@@ -195,6 +195,12 @@ await model111(data, {
 
 Al ejecutar el bloque anterior, generará un archivo **111.txt** en el directorio **uploads/models** especificado.
 
-## License
+## Build localmente
+
+```bash
+  pnpm install && pnpm run build
+```
+
+## Licencia
 
 [MIT](https://choosealicense.com/licenses/mit/)
