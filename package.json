@@ -15,9 +15,13 @@
     "models"
   ],
   "author": "David Blandon <dacxjo@pm.me>",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "exceljs": "^4.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dacxjo/aeat-utils.git"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.1.0",
