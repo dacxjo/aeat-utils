@@ -8,6 +8,13 @@ AEAT-Utils es una paquete que ayuda a la generación de algunos de los modelos A
 npm install aeat-utils
 ```
 
+## Modelos soportados
+
+- Modelo 111
+- Modelo 115
+- Modelo 130
+- Modelo 303
+
 ## Importación
 
 ```node
