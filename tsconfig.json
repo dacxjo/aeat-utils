@@ -1,12 +1,15 @@
 {
   "compilerOptions": {
+    "incremental": true,
+    "moduleResolution": "node",
     "target": "es6",
     "module": "commonjs",
     "declaration": true,
+    "declarationDir": "./lib",
     "outDir": "./lib",
     "strict": true,
-    "typeRoots": ["./node_modules/@types"]
+    "typeRoots": ["node_modules/@types", "src/types"]
   },
-  "include": ["src", "src/types"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/__tests__/*"]
 }
