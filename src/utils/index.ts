@@ -77,3 +77,7 @@ export function subtractFields(fieldA: Field, fieldB: Field): number {
 }
 
 export const blankKeywords = ['BLANCOS', 'blanco', 'En blanco', 'X', 'Blanco o C', 'X o blanco'];
+
+export function normalizeIban(iban: string) {
+  return iban.replace(/[^a-zA-Z|0-9]/g, "")
+}

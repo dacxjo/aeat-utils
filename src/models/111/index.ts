@@ -1,7 +1,7 @@
 import { Workbook, Worksheet } from 'exceljs';
 import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
-import { blankKeywords, extractText, parseNumericValue, sumFields } from '../../utils';
+import { blankKeywords, extractText, normalizeIban, parseNumericValue, sumFields } from '../../utils';
 import { join } from 'path';
 import { Model111Input, ModelOptions } from '../../types';
 
@@ -17,7 +17,7 @@ function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         row++;
         continue;
       case 5:
-        output += data.period;
+        output += data.period.padStart(2,'0');
         row++;
         continue;
       case 9:
@@ -68,7 +68,7 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         row++;
         continue;
       case 11:
-        output += data.period;
+        output += data.period.padStart(2,'0');
         row++;
         continue;
       case 12:
@@ -103,7 +103,7 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         continue;
       }
       case 45:
-        output += data.declarant.iban.padEnd(lon, ' ');
+        output += normalizeIban(data.declarant.iban).padEnd(lon, ' ');
         row++;
         continue;
       case 48:
@@ -146,7 +146,7 @@ export async function model111(input: Model111Input, options: ModelOptions) {
       output += pageTwoIteration(page2, 0, 44, row, input);
       // END PAGE 2
       let finalConstant = extractText(page1.getCell(`G${page1FinalRow}`).text);
-      finalConstant = finalConstant.replace('AAAA', input.exercise).replace('PP', input.period);
+      finalConstant = finalConstant.replace('AAAA', input.exercise).replace('PP', input.period.padStart(2,'0'));
       output += finalConstant;
       if (options.asBuffer) {
         return Buffer.from(output);

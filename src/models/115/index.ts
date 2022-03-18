@@ -1,7 +1,7 @@
 import { Workbook, Worksheet } from 'exceljs';
 import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
-import { blankKeywords, extractText, parseNumericValue } from '../../utils';
+import { blankKeywords, extractText, normalizeIban, parseNumericValue } from '../../utils';
 import { join } from 'path';
 import { Model115Input, ModelOptions } from '../../types';
 
@@ -89,7 +89,7 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         row++;
         continue;
       case 19:
-        output += data.declarant.iban.padEnd(lon, ' ');
+        output += normalizeIban(data.declarant.iban).padEnd(lon, ' ');
         row++;
         continue;
       case 22:
