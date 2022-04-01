@@ -90,6 +90,8 @@ export interface Model303Input extends Omit<Model111Input, 'fields' | 'declarati
     field29: Field;
     field30: Field;
     field31: Field;
+    field32: Field;
+    field33: Field;
     field59: Field;
     field60: Field;
     field110: Field;
@@ -111,6 +113,7 @@ export enum SpecsName {
   MODEL115 = 'DR115e15v13',
   MODEL130 = 'DR130e15v12',
   MODEL303 = 'DR303e21v200',
+  MODEL303_22 = 'DR303e22'
 }
 
 export declare function model111(input: Model111Input, options: ModelOptions): Promise<void>;

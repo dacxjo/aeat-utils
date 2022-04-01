@@ -17,7 +17,7 @@ function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         row++;
         continue;
       case 5:
-        output += data.period;
+        output += data.period.padStart(2,'0');;
         row++;
         continue;
       case 9:
@@ -68,7 +68,7 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         row++;
         continue;
       case 11:
-        output += data.period;
+        output += data.period.padStart(2,'0');;
         row++;
         continue;
       case 12:
@@ -133,7 +133,7 @@ export async function model115(input: Model115Input, options: ModelOptions) {
       output += pageTwoIteration(page2, 0, 18, row, input);
       // END PAGE 2
       let finalConstant = extractText(page1.getCell(`G${page1FinalRow}`).text);
-      finalConstant = finalConstant.replace('AAAA', input.exercise).replace('PP', input.period);
+      finalConstant = finalConstant.replace('AAAA', input.exercise).replace('PP', input.period.padStart(2,'0'));
       output += finalConstant;
       if (options.asBuffer) {
         return Promise.resolve(Buffer.from(output));

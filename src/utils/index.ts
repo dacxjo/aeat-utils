@@ -63,17 +63,7 @@ export function sumFields(fieldA: Field, fieldB: Field): number {
 }
 
 export function subtractFields(fieldA: Field, fieldB: Field): number {
-  if (typeof fieldA === 'string' && typeof fieldB === 'string') {
-    return parseFloat(fieldA) - parseFloat(fieldB);
-  } else if (typeof fieldA === 'string' && typeof fieldB === 'number') {
-    return parseFloat(fieldA) - fieldB;
-  } else if (typeof fieldA === 'number' && typeof fieldB === 'string') {
-    return fieldA - parseFloat(fieldB);
-  } else if (typeof fieldA === 'number' && typeof fieldB === 'number') {
-    return fieldA - fieldB;
-  } else {
-    return 0;
-  }
+  return Number(fieldA) - Number(fieldB)
 }
 
 export const blankKeywords = ['BLANCOS', 'blanco', 'En blanco', 'X', 'Blanco o C', 'X o blanco'];

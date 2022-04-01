@@ -19,7 +19,7 @@ function pageOneIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         row++;
         continue;
       case 5:
-        output += data.period;
+        output += data.period.padStart(2, '0');
         row++;
         continue;
       case 9:
@@ -52,9 +52,9 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
     Number(data.fields.field18) +
     Number(data.fields.field21) +
     Number(data.fields.field24);
-  const field45 = Number(data.fields.field29) + Number(data.fields.field31) + field11;
+  const field45 = Number(data.fields.field29) + Number(data.fields.field31) + Number(data.fields.field33) + field11;
   const field46 = field27 - field45;
-  persistentFields['field46'] = field46;
+  persistentFields['field46'] = Number(field46.toFixed(2));
   for (let index = fromRow; index < toRow; index++) {
     const id = Number(worksheet.getCell(`A${row}`).text);
     const lon = Number(worksheet.getCell(`C${row}`).text);
@@ -78,7 +78,7 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         row++;
         continue;
       case 10:
-        output += data.period;
+        output += data.period.padStart(2, '0');
         row++;
         continue;
       case 11:
@@ -99,6 +99,9 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         row++;
         continue;
       case 23:
+        output += data.period === "4T" || data.period === "12" ? parseNumericValue(1, lon) : parseNumericValue(0, lon);
+        row++;
+        continue;
       case 24:
         output += parseNumericValue(0, lon);
         row++;
@@ -136,7 +139,6 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         row++;
         continue;
       case 32:
-        console.log(parseNumericValue(data.fields.field08, lon));
         output += parseNumericValue(data.fields.field08, lon);
         row++;
         continue;
@@ -210,6 +212,14 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
         output += parseNumericValue(data.fields.field31, lon);
         row++;
         continue;
+      case 56:
+        output += parseNumericValue(data.fields.field32, lon);
+        row++;
+        continue;
+      case 57:
+        output += parseNumericValue(data.fields.field33, lon);
+        row++;
+        continue;
       case 69:
         output += parseNumericValue(field45, lon);
         row++;
@@ -236,7 +246,7 @@ function pageTwoIteration(worksheet: Worksheet, fromRow: number, toRow: number, 
   return output;
 }
 
-function pageThreeIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model303Input) {
+function pageThreeIteration21(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model303Input) {
   let output = '';
   const field87 = Number(data.fields.field110) - Number(data.fields.field78);
   const field69 = Number(persistentFields['field46']) - Number(data.fields.field78);
@@ -273,12 +283,11 @@ function pageThreeIteration(worksheet: Worksheet, fromRow: number, toRow: number
         continue;
       case 18:
       case 20:
-        console.log(persistentFields['field46']);
         output += parseNumericValue(persistentFields['field46'], lon);
         row++;
         continue;
       case 19:
-        output += parseNumericValue(100, lon);
+        output += '100'.padEnd(lon, '0');
         row++;
         continue;
       case 22:
@@ -324,9 +333,95 @@ function pageThreeIteration(worksheet: Worksheet, fromRow: number, toRow: number
   return output;
 }
 
+function pageThreeIteration(worksheet: Worksheet, fromRow: number, toRow: number, row: number, data: Model303Input) {
+  let output = '';
+  const field87 = Number(data.fields.field110) - Number(data.fields.field78);
+  const field69 = Number(persistentFields['field46'])  - Number(data.fields.field78);
+  for (let index = fromRow; index < toRow; index++) {
+    const id = Number(worksheet.getCell(`A${row}`).text);
+    const lon = Number(worksheet.getCell(`C${row}`).text);
+    const type = worksheet.getCell(`D${row}`).text;
+    const content = extractText(worksheet.getCell(`G${row}`).text);
+    switch (id) {
+      case 5:
+        output += parseNumericValue(data.fields.field59, lon);
+        row++;
+        continue;
+      case 6:
+        output += parseNumericValue(data.fields.field60, lon);
+        row++;
+        continue;
+      case 7:
+      case 8:
+      case 9:
+      case 10:
+      case 11:
+      case 12:
+      case 13:
+      case 14:
+      case 15:
+      case 21:
+      case 25:
+      case 37:
+        output += '0'.padStart(lon, '0');
+        row++;
+        continue;
+      case 16:
+      case 18:
+        output += parseNumericValue(persistentFields['field46'], lon);
+        row++;
+        continue;
+      case 17:
+        output += '100'.padEnd(lon, '0');
+        row++;
+        continue;
+      case 20:
+        output += parseNumericValue(data.fields.field110, lon);
+        row++;
+        continue;
+      case 21:
+        output += parseNumericValue(data.fields.field78, lon);
+        row++;
+        continue;
+      case 22:
+        output += parseNumericValue(field87, lon);
+        row++;
+        continue;
+      case 24:
+      case 26:
+        output += parseNumericValue(field69, lon);
+        row++;
+        continue;
+      case 27:
+        output += ' '.padEnd(lon, ' ');
+        row++;
+        continue;
+      case 31:
+        output += normalizeIban(data.declarant.iban).padEnd(lon, ' ');
+        row++;
+        continue;
+      case 39:
+        output += '</T30303000>'.padEnd(lon, ' ');
+        row++;
+        continue;
+    }
+    if (blankKeywords.includes(content.trim())) {
+      output += ''.padEnd(lon, ' ');
+    } else if (type === 'Num' || type === 'N') {
+      output += '0'.padStart(lon, '0');
+    }
+    if (row > 31 && content === '') {
+      output += ''.padEnd(lon, ' ');
+    }
+    row++;
+  }
+  return output;
+}
+
 export async function model303(input: Model303Input, options: ModelOptions) {
   const specsDir = join(__dirname, '../../specs');
-  const file303 = `${specsDir}/${SpecsName.MODEL303}.xlsx`;
+  const specName = input.exercise === "2022" ? SpecsName.MODEL303_22 : SpecsName.MODEL303;
+  const file303 = `${specsDir}/${specName}.xlsx`;
   const workbook = new Workbook();
   let output = '';
   await workbook.xlsx
@@ -350,10 +445,14 @@ export async function model303(input: Model303Input, options: ModelOptions) {
       const page3Constant = '<T30303000>';
       output += page3Constant;
       row = 10;
-      output += pageThreeIteration(page3, 0, 37, row, input);
+      if(input.exercise === '2022'){
+        output += pageThreeIteration(page3, 0, 35, row, input);
+      }else{
+        output += pageThreeIteration21(page3, 0, 37, row, input);
+      }
       // END PAGE 3
       let finalConstant = extractText(page1.getCell(`G${page1FinalRow}`).text);
-      finalConstant = finalConstant.replace('AAAA', input.exercise).replace('PP', input.period);
+      finalConstant = finalConstant.replace('AAAA', input.exercise).replace('PP', input.period.padStart(2, '0'));
       output += finalConstant;
       if (options.asBuffer) {
         return Promise.resolve(Buffer.from(output));
