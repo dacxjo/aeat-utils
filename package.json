@@ -1,6 +1,6 @@
 {
   "name": "aeat-utils",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "AEAT Utilities to generate AEAT Models",
   "main": "lib/index.js",
   "types": "lib/types/index.dts",
